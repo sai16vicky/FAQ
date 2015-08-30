@@ -46,7 +46,7 @@ vector<int> get_domain_values_non_zero(vector<int>& variable_values) {
 		if (is_domain_value_zero_for_all_factors) {
 			for (int j = 0; j < domain; j++) {
 				for (int k = cur_variable + 1; k <= variables; k++) {
-					if (factorvalues[cur_variable][k][i][k] != 0) {
+					if (factorvalues[cur_variable][k][i][j] != 0) {
 						is_domain_value_zero_for_all_factors = false;
 						break;
 					} 
@@ -56,7 +56,7 @@ vector<int> get_domain_values_non_zero(vector<int>& variable_values) {
 				}
 			}
 		}
-		if (is_domain_value_zero_for_all_factors) {
+		if (!is_domain_value_zero_for_all_factors) {
 			non_zero_domain_values.push_back(i);
 		}
 	}
@@ -64,10 +64,10 @@ vector<int> get_domain_values_non_zero(vector<int>& variable_values) {
 }
 
 double calculate_final_probabilities(vector<int>& variable_values) {
-	double total = 0.0;
+	double total = 1.0;
 	for (int i = 1; i <= variables; i++) {
 		for (int j = i+1; j <= variables; j++) {
-			total += factorvalues[i][j][variable_values[i-1]][variable_values[j-1]];
+			total *= factorvalues[i][j][variable_values[i-1]][variable_values[j-1]];
 		}
 	}
 	return total;
