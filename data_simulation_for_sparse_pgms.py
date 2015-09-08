@@ -23,6 +23,7 @@ def recursively_fill_values_of_domain(cur_factor, factor_index, factor, domain_d
 						print tmp_domain_list
 				else :
 						tmp_domain_list.append(0)
+						print tmp_domain_list
 						zero_index = zero_index + 1
 				return 
 		for cur_var_domain in range(0, domain_dictionary[factor[factor_index]]):
@@ -33,18 +34,18 @@ def recursively_fill_values_of_domain(cur_factor, factor_index, factor, domain_d
 # Getting the max_variables and randomly generating factors for a randomly chosen set of variables.
 max_variables = input()
 no_of_variables = numpy.random.randint(2, max_variables)
-no_of_factors = numpy.random.randint(1, 2**max_variables - 1)
+max_size_of_factors = input()
+no_of_factors = numpy.random.randint(1, 2**no_of_variables - 1)
 factor_model = [list()]*no_of_factors
 factor_set = set()
 for each_factor in range(0, no_of_factors):
 		cur_factor = list()
-		no_of_variables_in_factor = numpy.random.randint(1, no_of_variables)
 		last = 0
-		for each_variable_in_factor in range(0, no_of_variables_in_factor):
+		for each_variable_in_factor in range(0, max_size_of_factors):
 				if last + 1 < no_of_variables:
 						last = numpy.random.randint(last + 1, no_of_variables)
 						cur_factor.append(last)
-		if len(cur_factor) == no_of_variables_in_factor:
+		if len(cur_factor) <= max_size_of_factors:
 				factor_set.add(frozenset(cur_factor))#
 no_of_factors = len(factor_set)
 print(factor_set)
