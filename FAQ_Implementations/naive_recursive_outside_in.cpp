@@ -27,7 +27,7 @@ typedef struct dwisetrie_ {
 	int is_factor;
 	double factor_value;
 	struct dwisetrie_* children[D];
-} dwisetrie;
+} dwisetrie;    
 
 dwisetrie dwise_trie_ptr[MAXFACTORS];
 
