@@ -71,6 +71,7 @@ double get_factor_value(dwisetrie* dwise_trie_ptr, vector<int> factor_input) {
     return 0.0;
 }
 
+// Optimize this function. Make use of the fact that we can use lo from the previous iteration.
 int conditional_query(int yval, int cur_variable, int factor_index) {
     int lo = 0;
     int hi = factor_variable_domain[factor_index][cur_variable].size() - 1;
@@ -190,6 +191,9 @@ void input() {
                 insert(&dwise_trie_ptr[i], factor_input, factor_value);
             }
 		}
+        for (int j = 0; j < factor_size; j++) {
+            sort(factor_variable_domain[i][factor_variables[j]].begin(), factor_variable_domain[i][factor_variables[j]].end());
+        }
 	}
     return;
 }
