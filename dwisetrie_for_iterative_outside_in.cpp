@@ -48,7 +48,7 @@ void insert(dwisetrie* dwise_trie_ptr, vector<int> factor_input, double factor_v
 				new_dwise_trie_ptr->factor_value = factor_value;
 			}
 			for (int j = 0; j < D; j++) {
-                new_dwise_trie_ptr->children[i] = NULL;
+                new_dwise_trie_ptr->children[j] = NULL;
             }
 			dwise_trie_ptr->children[cur_domain_value] = new_dwise_trie_ptr;
 		}
