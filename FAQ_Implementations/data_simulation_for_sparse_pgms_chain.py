@@ -40,6 +40,7 @@ def recursively_fill_values_of_domain(cur_factor, factor_index, factor, domain_d
         recursively_fill_values_of_domain(cur_factor, factor_index + 1, factor, domain_dictionary, generated_probabilities, tmp_domain_list)
 
 # Getting the max_variables and randomly generating factors for a randomly chosen set of variables.
+print "Enter the maximum number of variables."
 max_variables = input()
 no_of_variables = numpy.random.randint(2, max_variables)
 file_write.write(str(no_of_variables))
@@ -64,6 +65,7 @@ file_write.write('\n')
 #print(factor_set)
 
 # Getting the max_domain value and randomly generating domains for each variable.
+print "Enter the maximum domain that variables can take."
 max_domain = input()
 domain_dictionary = dict()
 
