@@ -31,7 +31,7 @@ def recursively_fill_values_of_domain(cur_factor, factor_index, factor, domain_d
             file_write.write('\n')
         else :
             tmp_domain_list.append(0)
-            print tmp_domain_list
+            print (tmp_domain_list)
             zero_index = zero_index + 1
         return
     for cur_var_domain in range(0, domain_dictionary[factor[factor_index]]):
@@ -58,7 +58,7 @@ for each_factor in range(2, no_of_variables + 1):
     cur_factor = list()
     cur_factor.append(each_factor - 1)
     cur_factor.append(each_factor)
-    factor_set.add(frozenset(cur_factor))
+    factor_set. add(frozenset(cur_factor))
 no_of_factors = len(factor_set)
 file_write.write(str(no_of_factors))
 file_write.write('\n')
@@ -75,7 +75,7 @@ for each_variable in range(1, no_of_variables + 1):
     if each_variable < no_of_variables:
         file_write.write(' ')
     domain_dictionary[each_variable] = domain_of_variable
-print domain_dictionary
+print (domain_dictionary)
 file_write.write('\n')
 
 # We need to get this feature up. As of now we are generating random models.
@@ -83,7 +83,7 @@ cur_factor = 0
 for factor in factor_set:
     factor_size = 1
     factor = sorted(list(factor))
-    print factor
+    print (factor)
     final_factor = str(factor).replace(',', ' ')
     final_factor = final_factor.replace('[', '')
     final_factor = final_factor.replace(']', '')
