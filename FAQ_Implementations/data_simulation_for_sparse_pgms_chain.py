@@ -23,7 +23,7 @@ def recursively_fill_values_of_domain(cur_factor, factor_index, factor, domain_d
         if (toss == 1 or zero_index + 1 >=  number_of_zeros) and gen_prob_index < number_of_non_zeros:
             tmp_domain_list.append(generated_probabilities[0][gen_prob_index])
             gen_prob_index = gen_prob_index + 1
-            print tmp_domain_list
+            print (tmp_domain_list)
             final_domain_list = str(tmp_domain_list).replace(',', ' ')
             final_domain_list = final_domain_list.replace('[', '')
             final_domain_list = final_domain_list.replace(']', '')
