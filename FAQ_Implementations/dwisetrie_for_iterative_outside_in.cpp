@@ -201,6 +201,6 @@ void input() {
 
 int main() {
 	input();
-    cout << "The final result is : " << iterative_outside_in() << "\n";
+  cout << "The final result is : " << iterative_outside_in() << "\n";
 	return 0;
 }
