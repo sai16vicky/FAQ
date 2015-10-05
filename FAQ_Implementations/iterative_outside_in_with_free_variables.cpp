@@ -108,16 +108,15 @@ double calculate_probabilities(vector<int> domain_values) {
     return result;
 }
 
-dwisetrie iterative_outside_in_with_free_variables() {
-    double r = 0.0;
+dwisetrie* iterative_outside_in_with_free_variables() {
     int k = 0;
+    no_of_factors += 1;
     if (f == 0) {
-        return new dwisetrie();
+        return NULL;
     }
     vector<int> factor_input;
     vector<int> x(no_of_variables + 1, 0);
     x[k+1] = -INF;
-    no_of_factors += 1;
     while (x[1] < INF) {
         int y = x[k+1];
         vector<int> ys;
@@ -159,7 +158,7 @@ dwisetrie iterative_outside_in_with_free_variables() {
             }
         }
     }
-    return dwise_trie_ptr[no_of_factors];
+    return &dwise_trie_ptr[no_of_factors];
 }
 
 void input() {
@@ -227,7 +226,7 @@ void input() {
 
 int main() {
 	input();
-    cout << "The final result is : " << iterative_outside_in() << "\n";
-    dwisetrie iterative_outside_in_with_free_variables();
+    // cout << "The final result is : " << iterative_outside_in() << "\n";
+    iterative_outside_in_with_free_variables();
 	return 0;
 }
