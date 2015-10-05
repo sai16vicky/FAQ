@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <map>
 #include <string>
@@ -189,7 +190,7 @@ void input() {
 			}
             string factor_value_string;
             cin >> factor_value_string;
-            double factor_value = stod(factor_value_string);
+            double factor_value = strtod(factor_value_string.c_str(), NULL);
             if (factor_value > 0.0) {
                 insert(&dwise_trie_ptr[i], factor_input, factor_value);
             }
