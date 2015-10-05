@@ -15,12 +15,13 @@
 
 using namespace std;
 
-int no_of_variables, no_of_factors;
+int no_of_variables, no_of_factors, f;
 map<int,int> factor_variable_domain_exists[MAXFACTORS][MAXVARIABLES];
 vector<int> domain_list;
 vector< vector<int> > factors;
 vector< vector<int> > factor_index_by_variable;
 vector<int> factor_variable_domain[MAXFACTORS][MAXVARIABLES];
+vector<int> free_variables;
 
 // A D-Wise trie is a generalization of a bitwise(which contains only 0 and 1) trie to
 // D values. Please refer to https://en.wikipedia.org/wiki/Trie#Bitwise_tries for a basic
@@ -104,11 +105,16 @@ double calculate_probabilities(vector<int> domain_values) {
     return result;
 }
 
-double iterative_outside_in() {
+dwisetrie iterative_outside_in_with_free_variables() {
     double r = 0.0;
     int k = 0;
+    if (f == 0) {
+        return new dwisetrie();
+    }
+    vector<int> factor_input;
     vector<int> x(no_of_variables + 1, 0);
     x[k+1] = -INF;
+    no_of_factors += 1;
     while (x[1] < INF) {
         int y = x[k+1];
         vector<int> ys;
@@ -125,16 +131,23 @@ double iterative_outside_in() {
             }
             if (y == miny) {
                 x[k+1] = y;
+                if (k + 1 <= f) {
+                    factor_input.push_back(x[k+1]);
+                }
                 break;
             }
         }
         if (x[k+1] != INF) {
+            // The following if condition is not required since we are passing in the required factor trie directly into the insert function.
+            // if (k + 1 == f) {
+                // new_dwise_trie_ptr = new dwisetrie();
+            // }
             if (k + 1 < no_of_variables) {
                 k = k + 1;
                 x[k+1] = -INF;
             }
             else {
-                r += calculate_probabilities(x);
+                insert(&dwise_trie_ptr[no_of_factors], factor_input, calculate_probabilities(x));
             }
         }
         else {
@@ -143,7 +156,7 @@ double iterative_outside_in() {
             }
         }
     }
-    return r;
+    return dwise_trie_ptr[no_of_factors];
 }
 
 void input() {
@@ -198,6 +211,13 @@ void input() {
             sort(factor_variable_domain[i][factor_variables[j]].begin(), factor_variable_domain[i][factor_variables[j]].end());
         }
 	}
+    // Enter the size of variable order.
+    cin >> f;
+    free_variables.resize(f + 1);
+    // Enter the variable order one by one.
+    for (int i = 1; i <= f; i++) {
+        free_variables[i] = i;
+    }
     return;
 }
 
@@ -205,5 +225,6 @@ void input() {
 int main() {
 	input();
     cout << "The final result is : " << iterative_outside_in() << "\n";
+    dwisetrie iterative_outside_in_with_free_variables();
 	return 0;
 }

@@ -1,7 +1,9 @@
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <iostream>
 #include <map>
+#include <string>
 #include <vector>
 
 #define D 20 // set the largest domain D among all variables.
@@ -201,6 +203,6 @@ void input() {
 
 int main() {
 	input();
-    cout << "The final result is : " << iterative_outside_in() << "\n";
+  cout << "The final result is : " << iterative_outside_in() << "\n";
 	return 0;
 }
