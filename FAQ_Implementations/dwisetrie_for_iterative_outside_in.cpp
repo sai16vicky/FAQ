@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <cstring>
 
 #define D 20 // set the largest domain D among all variables.
 #define INF (int)1e9

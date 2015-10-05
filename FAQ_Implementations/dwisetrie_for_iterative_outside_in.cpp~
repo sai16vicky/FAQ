@@ -1,8 +1,11 @@
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <iostream>
 #include <map>
+#include <string>
 #include <vector>
+#include <cstring>
 
 #define D 20 // set the largest domain D among all variables.
 #define INF (int)1e9
@@ -186,7 +189,7 @@ void input() {
 			}
             string factor_value_string;
             cin >> factor_value_string;
-            double factor_value = stod(factor_value_string);
+            double factor_value = std::stod(factor_value_string);
             if (factor_value > 0.0) {
                 insert(&dwise_trie_ptr[i], factor_input, factor_value);
             }
@@ -201,6 +204,6 @@ void input() {
 
 int main() {
 	input();
-    cout << "The final result is : " << iterative_outside_in() << "\n";
+  cout << "The final result is : " << iterative_outside_in() << "\n";
 	return 0;
 }
