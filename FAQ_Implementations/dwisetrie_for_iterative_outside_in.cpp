@@ -1,9 +1,10 @@
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <iostream>
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 #define D 20 // set the largest domain D among all variables.
 #define INF (int)1e9
