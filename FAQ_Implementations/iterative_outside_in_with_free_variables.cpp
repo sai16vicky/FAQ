@@ -223,10 +223,24 @@ void input() {
     return;
 }
 
+void print_trie(dwisetrie* root) {
+    if (root == NULL) {
+        cout << "\n";
+        return ;
+    }
+    for (int i = 0; i < D; i++) {
+        if (root->children[i] != NULL) {
+            root = root->children[i];
+            cout << root->domain << " " << root->is_factor << " " << root->factor_value << "\n";
+            print_trie(root);
+        }
+    }
+    return ;
+}
 
 int main() {
 	input();
-    // cout << "The final result is : " << iterative_outside_in() << "\n";
-    iterative_outside_in_with_free_variables();
-	return 0;
+    dwisetrie* result = iterative_outside_in_with_free_variables();
+	print_trie(result);
+    return 0;
 }
