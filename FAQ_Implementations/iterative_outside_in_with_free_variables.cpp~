@@ -10,6 +10,8 @@
 #define MAXVARIABLES 20
 #define N 10 // set the maximum number of variables.
 
+// Commented by Arti - Oct 5, 2015
+
 using namespace std;
 
 int no_of_variables, no_of_factors;
