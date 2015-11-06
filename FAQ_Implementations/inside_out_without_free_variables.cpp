@@ -5,15 +5,13 @@
 #include <vector>
 #include <cstdio>
 #include <string>
+#include <cstring>
 
 #define D 20 // set the largest domain D among all variables.
 #define INF (int)1e9
 #define MAXFACTORS 1000
 #define MAXVARIABLES 20
 #define N 10 // set the maximum number of variables.
-
-// Commented by Arti - Oct 5, 2015
-// Testing gedit again
 
 using namespace std;
 
@@ -107,23 +105,22 @@ double calculate_probabilities(vector<int> domain_values) {
     return result;
 }
 
-dwisetrie iterative_outside_in_with_free_variables() {
-    double r = 0.0;
+dwisetrie* iterative_outside_in_with_free_variables(int _f, vector< vector<int> > _factor_index_by_variable) {
     int k = 0;
-    if (f == 0) {
-        return new dwisetrie();
+    if (_f == 0) {
+        return NULL;
     }
+    dwisetrie new_factor;
     vector<int> factor_input;
     vector<int> x(no_of_variables + 1, 0);
     x[k+1] = -INF;
-    no_of_factors += 1;
     while (x[1] < INF) {
         int y = x[k+1];
         vector<int> ys;
         while(1) {
             ys.clear();
-            for (int i = 0; i < (int)factor_index_by_variable[k+1].size(); i++) {
-                int factor_index = factor_index_by_variable[k+1][i];
+            for (int i = 0; i < (int)_factor_index_by_variable[k+1].size(); i++) {
+                int factor_index = _factor_index_by_variable[k+1][i];
                 ys.push_back(conditional_query(y, k + 1, factor_index));
             }
             int miny = INF;
@@ -133,7 +130,7 @@ dwisetrie iterative_outside_in_with_free_variables() {
             }
             if (y == miny) {
                 x[k+1] = y;
-                if (k + 1 <= f) {
+                if (k + 1 <= _f) {
                     factor_input.push_back(x[k+1]);
                 }
                 break;
@@ -142,14 +139,14 @@ dwisetrie iterative_outside_in_with_free_variables() {
         if (x[k+1] != INF) {
             // The following if condition is not required since we are passing in the required factor trie directly into the insert function.
             // if (k + 1 == f) {
-                // new_dwise_trie_ptr = new dwisetrie();
+            // new_dwise_trie_ptr = new dwisetrie();
             // }
             if (k + 1 < no_of_variables) {
                 k = k + 1;
                 x[k+1] = -INF;
             }
             else {
-                insert(&dwise_trie_ptr[no_of_factors], factor_input, calculate_probabilities(x));
+                insert(&new_factor, factor_input, calculate_probabilities(x));
             }
         }
         else {
@@ -158,7 +155,45 @@ dwisetrie iterative_outside_in_with_free_variables() {
             }
         }
     }
-    return dwise_trie_ptr[no_of_factors];
+    return &new_factor;
+}
+
+dwisetrie* inside_out_without_free_variables() {
+    vector< int > E[n + 1];
+    E[n].resize(factors.size());
+    for(int i = 0; i < (int)factors.size(); i++) {
+        E[n].push_back(i);
+    }
+    int k = f;
+    while(k >= 1) {
+        map< int, int > U_k;
+        map< int, int > delta_k;
+        map< int, int >::iterator it;
+        vector< vector<int> > factor_index_by_variable_tmp;
+        factor_index_by_variable_tmp.resize(no_of_variables + 1);
+        for(int i = 0; i < (int)factor_index_by_variable[k].size(); i++) {
+            delta_k[factor_index_by_variable[k][i]] += 1;
+            for(int j = 0; j < (int)factors[factor_index_by_variable[k][i]].size(); j++) {
+                U_k[factors[factor_index_by_variable[k][i]][j]] += 1;
+                factor_index_by_variable_tmp[factors[factor_index_by_variable[k][i]][j]].push_back(factor_index_by_variable[k][i]);
+            }
+        }
+        vector<int> new_factor_variables;
+        for(it = U_k.begin(); it != U_k.end(); it++) {
+            if(it->first != k) {
+                new_factor_variables.push_back(it->first);
+            }
+        }
+        dwisetrie* outside_in_result = iterative_outside_in_with_free_variables(new_factor_variables.size(), factor_index_by_variable_tmp);
+        
+        for(int i = 0; i < (int)E[k].size(); i++) {
+            if(delta_k.find(E[k][i]) == delta_k.end()) {
+                E[k - 1].push_back(E[k][i]);
+            }
+        }
+        
+        k = k - 1;
+    }
 }
 
 void input() {
@@ -208,7 +243,7 @@ void input() {
             if (factor_value > 0.0) {
                 insert(&dwise_trie_ptr[i], factor_input, factor_value);
             }
-		}
+		}`
         for (int j = 0; j < factor_size; j++) {
             sort(factor_variable_domain[i][factor_variables[j]].begin(), factor_variable_domain[i][factor_variables[j]].end());
         }
@@ -223,10 +258,24 @@ void input() {
     return;
 }
 
+void print_trie(dwisetrie* root) {
+    if (root == NULL) {
+        cout << "\n";
+        return ;
+    }
+    for (int i = 0; i < D; i++) {
+        if (root->children[i] != NULL) {
+            root = root->children[i];
+            cout << root->domain << " " << root->is_factor << " " << root->factor_value << "\n";
+            print_trie(root);
+        }
+    }
+    return ;
+}
 
 int main() {
 	input();
-    cout << "The final result is : " << iterative_outside_in() << "\n";
-    dwisetrie iterative_outside_in_with_free_variables();
-	return 0;
+    dwisetrie* result = iterative_outside_in_with_free_variables();
+	print_trie(result);
+    return 0;
 }

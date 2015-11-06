@@ -208,7 +208,7 @@ void input() {
             if (factor_value > 0.0) {
                 insert(&dwise_trie_ptr[i], factor_input, factor_value);
             }
-		}
+		}`
         for (int j = 0; j < factor_size; j++) {
             sort(factor_variable_domain[i][factor_variables[j]].begin(), factor_variable_domain[i][factor_variables[j]].end());
         }
