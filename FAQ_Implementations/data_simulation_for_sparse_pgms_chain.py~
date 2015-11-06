@@ -15,14 +15,14 @@ def recursively_fill_values_of_domain(cur_factor, factor_index, factor, domain_d
     if factor_index == len(factor):
         global gen_prob_index
         global factor_model
-        global zero_index
+        global zero_index # counting the zero
         global number_of_zeros
         global number_of_non_zeros
         toss = numpy.random.randint(0, 2)
         tmp_domain_list = list(domain_list)
-        if (toss == 1 or zero_index + 1 >=  number_of_zeros) and gen_prob_index < number_of_non_zeros:
-            tmp_domain_list.append(generated_probabilities[0][gen_prob_index])
-            gen_prob_index = gen_prob_index + 1
+        if (toss == 1 or zero_index + 1 >=  number_of_zeros) and gen_prob_index < number_of_non_zeros:# is for non-zero case
+            tmp_domain_list.append(generated_probabilities[0][gen_prob_index]) # gen_prob_index is for traversing generated probabilities
+            gen_prob_index = gen_prob_index + 1 
             print (tmp_domain_list)
             final_domain_list = str(tmp_domain_list).replace(',', ' ')
             final_domain_list = final_domain_list.replace('[', '')
@@ -34,11 +34,11 @@ def recursively_fill_values_of_domain(cur_factor, factor_index, factor, domain_d
             print (tmp_domain_list)
             zero_index = zero_index + 1
         return
-    for cur_var_domain in range(0, domain_dictionary[factor[factor_index]]):
-        tmp_domain_list = list(domain_list)
+    for cur_var_domain in range(0, domain_dictionary[factor[factor_index]]): # factor -> array of the variables, factor_index -> indices of the array
+        tmp_domain_list = list(domain_list) # building the factor domain entry; e.g. [0 0 0], [0 0 1] etc. for a three variable factor
         tmp_domain_list.append(cur_var_domain)
         recursively_fill_values_of_domain(cur_factor, factor_index + 1, factor, domain_dictionary, generated_probabilities, tmp_domain_list)
-
+#------------------------------------------------------------
 # Getting the max_variables and randomly generating factors for a randomly chosen set of variables.
 print ("Enter the maximum number of variables.")
 max_variables = input()
