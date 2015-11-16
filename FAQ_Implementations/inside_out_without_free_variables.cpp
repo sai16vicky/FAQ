@@ -1,109 +1,29 @@
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <map>
-#include <vector>
-#include <cstdio>
-#include <string>
-#include <cstring>
+#include "dwisetrie.h"
 
-#define D 20 // set the largest domain D among all variables.
 #define INF (int)1e9
-#define MAXFACTORS 1000
+#define MAXENTRIES 20
 #define MAXVARIABLES 20
 #define N 10 // set the maximum number of variables.
 
 using namespace std;
 
-int no_of_variables, no_of_factors, f;
+int no_of_variables, no_of_factors, f, vis_factor[MAXFACTORS];
+map<vector<int>, double> factor_entry_map[MAXFACTORS][MAXENTRIES];
+vector< vector< vector<int> > > factor_entry_vector;
 map<int,int> factor_variable_domain_exists[MAXFACTORS][MAXVARIABLES];
 vector<int> domain_list;
-vector< vector<int> > factors;
-vector< vector<int> > factor_index_by_variable;
+vector< vector<int> > factors, factors_variable_order, factor_index_by_variable;
 vector<int> factor_variable_domain[MAXFACTORS][MAXVARIABLES];
-vector<int> free_variables;
 
-// A D-Wise trie is a generalization of a bitwise(which contains only 0 and 1) trie to
-// D values. Please refer to https://en.wikipedia.org/wiki/Trie#Bitwise_tries for a basic
-// understanding of Bitwise tries. The D-Wise trie should easily follow from the same.
-typedef struct dwisetrie_ {
-	int domain;
-	int is_factor;
-	double factor_value;
-	struct dwisetrie_* children[D];
-} dwisetrie;
+int vis_factor[MAXFACTORS];
+map<int, int> var_map, r_var_map;
 
-dwisetrie dwise_trie_ptr[MAXFACTORS];
+typedef struct _ionode {
+    int var_id;
+    vector<int> factors[MAXFACTORS];
+}ionode;
 
-void insert(dwisetrie* dwise_trie_ptr, vector<int> factor_input, double factor_value) {
-    for (int i = 0; i < (int)factor_input.size(); i++) {
-		int cur_domain_value = factor_input[i];
-		if (dwise_trie_ptr -> children[cur_domain_value] != NULL) {
-			dwise_trie_ptr = dwise_trie_ptr->children[cur_domain_value];
-			if (i == (int)factor_input.size() - 1) {
-				dwise_trie_ptr->is_factor = 1;
-				dwise_trie_ptr->factor_value = factor_value;
-			}
-		} else {
-			dwisetrie* new_dwise_trie_ptr = new dwisetrie();
-			new_dwise_trie_ptr->domain = cur_domain_value;
-			if (i == (int)factor_input.size() - 1 ) {
-				new_dwise_trie_ptr->is_factor = 1;
-				new_dwise_trie_ptr->factor_value = factor_value;
-			}
-			for (int j = 0; j < D; j++) {
-                new_dwise_trie_ptr->children[j] = NULL;
-            }
-			dwise_trie_ptr->children[cur_domain_value] = new_dwise_trie_ptr;
-		}
-	}
-    return ;
-}
-
-double get_factor_value(dwisetrie* dwise_trie_ptr, vector<int> factor_input) {
-    for (int i = 0; i < (int)factor_input.size(); i++) {
-        int cur_domain_value = factor_input[i];
-        if (dwise_trie_ptr -> children[cur_domain_value] != NULL) {
-            dwise_trie_ptr = dwise_trie_ptr->children[cur_domain_value];
-            if (i == (int)factor_input.size() - 1) {
-                return dwise_trie_ptr->factor_value;
-            }
-        } else {
-            return 0.0;
-        }
-    }
-    return 0.0;
-}
-
-// Optimize this function. Make use of the fact that we can use lo from the previous iteration.
-int conditional_query(int yval, int cur_variable, int factor_index) {
-    int lo = 0;
-    int hi = factor_variable_domain[factor_index][cur_variable].size() - 1;
-    int upperbound = INF;
-    while (lo <= hi) {
-        int mid = (lo + hi) >> 1;
-        if (factor_variable_domain[factor_index][cur_variable][mid] > yval) {
-            upperbound = min(upperbound, factor_variable_domain[factor_index][cur_variable][mid]);
-            hi = mid - 1;
-        }
-        else {
-            lo = mid + 1;
-        }
-    }
-    return upperbound;
-}
-
-double calculate_probabilities(vector<int> domain_values) {
-    double result = 1.0;
-    for (int i = 0; i < (int)factors.size(); i++) {
-        vector<int> tmp_domain_values;
-        for (int j = 0; j < (int)factors[i].size(); j++) {
-            tmp_domain_values.push_back(domain_values[factors[i][j]]);
-        }
-        result *= get_factor_value(&dwise_trie_ptr[i], tmp_domain_values);
-    }
-    return result;
-}
+ionode node[no_of_variables];
 
 dwisetrie* iterative_outside_in_with_free_variables(int _f, vector< vector<int> > _factor_index_by_variable) {
     int k = 0;
@@ -158,21 +78,79 @@ dwisetrie* iterative_outside_in_with_free_variables(int _f, vector< vector<int> 
     return &new_factor;
 }
 
-dwisetrie* inside_out_without_free_variables() {
-    vector< int > E[n + 1];
-    E[n].resize(factors.size());
-    for(int i = 0; i < (int)factors.size(); i++) {
-        E[n].push_back(i);
+class cmp {
+    vector<int> var_order;
+public:
+    cmp(vector<int> _var_order) : var_order(_var_order) {}
+    bool operator(vector<int> v1, vector<int> v2) {
+        int n = var_order.size();
+        for(int i=n-1; i>=0; i--) {
+            if(v1[var_order[i]] != v2[var_order[i]]) {
+                return v1[var_order[i]] < v2[var_order[i]];
+            }
+        }
+        return true;
     }
-    int k = f;
+};
+
+void preprocess(vector<int>& variable_order, vector< vector < vector<int> > >& factor_entry) {
+    factors_variable_order.resize(no_of_factors);
+    factor_index_by_variable.resize(no_of_variables + 1);
+    memset(vis_factor, 0, sizeof vis_factor);
+    int n = variable_order.size();
+    for(int i=n-1; i>=0 ;i--) {
+        var_map[i] = variable_order[i];
+        r_var_map[variable_order[i]] = i;
+    }
+    for(int i=n-1; i>=0; i--) {
+        int st = 0;
+        node[i].var_id = variable_order[i];
+        for(int j=0; j<MAXFACTORS; j++) {
+            node[i].factors[j].clear();
+        }
+        for(int j=0; j<no_of_factors; j++) {
+            int var_in_factor = 0;
+            for(int k = 0; k < (int)factors[j].size(); k++) {
+                if(factors[j][k] == variable_order[i]) {
+                    var_in_factor = 1;
+                }
+            }
+            if(var_in_factor and !vis_factor[j]) {
+                vis_factor[j] = 1;
+                vector< pair<int,int> > tmp_factor;
+                for(int k=0; k<(int)factors[j].size(); k++) {
+                    tmp_factor.push_back(make_pair(r_var_map[factors[j][k]], factors[j][k]));
+                }
+                for(int k=0; k<(int)tmp_factor.size(); k++) {
+                    node[i].factors[st].push_back(tmp_factor[k].second);
+                }
+                sort(factor_entry[j].begin(), factor_entry[j].end(), cmp(variable_order));
+                for(int =0; j<)
+                st++;
+            }
+        }
+    }
+    
+    return ;
+}
+
+dwisetrie* inside_out_without_free_variables(vector<int>& variable_order) {
+    preprocess(variable_order, factor_entry_vector);
+    vector<int> E[no_of_variables + 1];
+    E[no_of_variables].resize(factors.size());
+    for(int i = 0; i < (int)factor_index_by_variable.size(); i++) {
+        E[no_of_variables].push_back(i);
+    }
+    int k = no_of_variables;
     while(k >= 1) {
-        map< int, int > U_k;
-        map< int, int > delta_k;
-        map< int, int >::iterator it;
+        int var_k = variable_order[k - 1];
+        map<int,int> U_k;
+        map<int,int> delta_k;
+        map<int,int>::iterator it;
         vector< vector<int> > factor_index_by_variable_tmp;
         factor_index_by_variable_tmp.resize(no_of_variables + 1);
-        for(int i = 0; i < (int)factor_index_by_variable[k].size(); i++) {
-            delta_k[factor_index_by_variable[k][i]] += 1;
+        for(int i = 0; i < (int)factor_index_by_variable[var_k].size(); i++) {
+            delta_k[factor_index_by_variable[var_k][i]] += 1;
             for(int j = 0; j < (int)factors[factor_index_by_variable[k][i]].size(); j++) {
                 U_k[factors[factor_index_by_variable[k][i]][j]] += 1;
                 factor_index_by_variable_tmp[factors[factor_index_by_variable[k][i]][j]].push_back(factor_index_by_variable[k][i]);
@@ -185,38 +163,30 @@ dwisetrie* inside_out_without_free_variables() {
             }
         }
         dwisetrie* outside_in_result = iterative_outside_in_with_free_variables(new_factor_variables.size(), factor_index_by_variable_tmp);
-        
         for(int i = 0; i < (int)E[k].size(); i++) {
             if(delta_k.find(E[k][i]) == delta_k.end()) {
                 E[k - 1].push_back(E[k][i]);
             }
         }
-        
         k = k - 1;
     }
 }
 
 void input() {
 	freopen("sample_simulation_input.txt", "r", stdin);
-	// Note : All these inputs will be obtained from the dataset provided to us. As this is a sample implementation,
-	// we are taking them from stdin.
-	// Enter the number of variables.
-	cin >> no_of_variables;
-    domain_list.resize(no_of_variables + 1);
-    factor_index_by_variable.resize(no_of_variables + 1);
-    // Enter the number of factors.
-	cin >> no_of_factors;
+    cin >> no_of_variables;
+    domain_list.resize(no_of_variables);
+    factor_index_by_variable.resize(no_of_variables);
+    cin >> no_of_factors;
     factors.resize(no_of_factors);
-    // Enter the domain for each variable. Note that each variable takes values from 0 to domain - 1(both inclusive).
-	for (int i = 1; i <= no_of_variables; i++) {
+   	for (int i = 0; i < no_of_variables; i++) {
         cin >> domain_list[i];
     }
+    factor_entry_vector.resize(no_of_factors);
 	for (int i = 0; i < no_of_factors; i++) {
-		// Enter the size of the factor.
-		int factor_size;
+        int factor_size;
 		cin >> factor_size;
-		// Enter the variables involved in factor i.
-		vector<int> factor_variables(factor_size, 0);
+        vector<int> factor_variables(factor_size, 0);
 		int entries = 1;
         for (int j = 0; j < factor_size; j++) {
             cin >> factor_variables[j];
@@ -227,55 +197,30 @@ void input() {
         int sparsity_factor;
 		cin >> sparsity_factor;
 		entries -= floor((double)((1.0*entries*sparsity_factor)/100));
-        for (int j = 1; j <= entries; j++) {
+        factor_entry_vector.resize(entries);
+        for (int j = 0; j < entries; j++) {
             vector< int > factor_input(factor_size);
-			// Enter the factor values with the domain value followed by the probability.
-			for (int k = 0; k < factor_size; k++) {
+            for (int k = 0; k < factor_size; k++) {
 				cin >> factor_input[k];
-                if (factor_variable_domain_exists[i][factor_variables[k]].find(factor_input[k]) == factor_variable_domain_exists[i][factor_variables[k]].end()) {
-                    factor_variable_domain[i][factor_variables[k]].push_back(factor_input[k]);
-                    factor_variable_domain_exists[i][factor_variables[k]][factor_input[k]] += 1;
-                }
-			}
+                factor_entry_vector[i][j].push_back(factor_input[k]);
+            }
             string factor_value_string;
             cin >> factor_value_string;
             double factor_value = stod(factor_value_string);
-            if (factor_value > 0.0) {
-                insert(&dwise_trie_ptr[i], factor_input, factor_value);
-            }
-		}`
-        for (int j = 0; j < factor_size; j++) {
-            sort(factor_variable_domain[i][factor_variables[j]].begin(), factor_variable_domain[i][factor_variables[j]].end());
+            factor_entry_map[i][j][factor_input] = factor_value;
+            factor_entry_vector[i][j].push_back(factor_value);
         }
-	}
-    // Enter the size of variable order.
-    cin >> f;
-    free_variables.resize(f + 1);
-    // Enter the variable order one by one.
-    for (int i = 1; i <= f; i++) {
-        free_variables[i] = i;
     }
     return;
 }
 
-void print_trie(dwisetrie* root) {
-    if (root == NULL) {
-        cout << "\n";
-        return ;
-    }
-    for (int i = 0; i < D; i++) {
-        if (root->children[i] != NULL) {
-            root = root->children[i];
-            cout << root->domain << " " << root->is_factor << " " << root->factor_value << "\n";
-            print_trie(root);
-        }
-    }
-    return ;
+vector<int> calculate_variable_order() {
+    return vector<int>();
 }
 
 int main() {
-	input();
-    dwisetrie* result = iterative_outside_in_with_free_variables();
-	print_trie(result);
-    return 0;
+    input();
+    vector<int> variable_order = calculate_variable_order();
+    dwisetrie* result = iterative_outside_in_with_free_variables(variable_order);
+	return 0;
 }

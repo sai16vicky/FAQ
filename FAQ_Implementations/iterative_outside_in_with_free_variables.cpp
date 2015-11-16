@@ -9,17 +9,18 @@
 
 #define D 20 // set the largest domain D among all variables.
 #define INF (int)1e9
-#define MAXFACTORS 1000
+#DEFine MAXENTRIES 20
+#define MAXFACTORS 20
 #define MAXVARIABLES 20
 #define N 10 // set the maximum number of variables.
 
-// Commented by Arti - Oct 5, 2015
-// Testing gedit again
 
 using namespace std;
 
 int no_of_variables, no_of_factors, f;
 map<int,int> factor_variable_domain_exists[MAXFACTORS][MAXVARIABLES];
+map<vector<int>, double> factor_entry_map[MAXFACTORS][MAXENTRIES];
+vector< vector<int> > factor_entry_vector[MAXFACTORS][MAXENTRIES];
 vector<int> domain_list;
 vector< vector<int> > factors;
 vector< vector<int> > factor_index_by_variable;
@@ -192,11 +193,12 @@ void input() {
         int sparsity_factor;
 		cin >> sparsity_factor;
 		entries -= floor((double)((1.0*entries*sparsity_factor)/100));
-        for (int j = 1; j <= entries; j++) {
+        for (int j = 0; j < entries; j++) {
             vector< int > factor_input(factor_size);
 			// Enter the factor values with the domain value followed by the probability.
 			for (int k = 0; k < factor_size; k++) {
 				cin >> factor_input[k];
+                factor_entry_vector[i][j].push_back(factor_input[k]);
                 if (factor_variable_domain_exists[i][factor_variables[k]].find(factor_input[k]) == factor_variable_domain_exists[i][factor_variables[k]].end()) {
                     factor_variable_domain[i][factor_variables[k]].push_back(factor_input[k]);
                     factor_variable_domain_exists[i][factor_variables[k]][factor_input[k]] += 1;
@@ -205,10 +207,10 @@ void input() {
             string factor_value_string;
             cin >> factor_value_string;
             double factor_value = stod(factor_value_string);
-            if (factor_value > 0.0) {
-                insert(&dwise_trie_ptr[i], factor_input, factor_value);
-            }
-		}`
+            factor_entry_map[i][j][factor_input] = factor_value;
+            factor_entry_vector[i][j].push_back(factor_value);
+            // insert(&dwise_trie_ptr[i], factor_input, factor_value);
+		}
         for (int j = 0; j < factor_size; j++) {
             sort(factor_variable_domain[i][factor_variables[j]].begin(), factor_variable_domain[i][factor_variables[j]].end());
         }
