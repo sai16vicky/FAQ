@@ -18,11 +18,19 @@ vector<int> factor_variable_domain[MAXFACTORS][MAXVARIABLES];
 int vis_factor[MAXFACTORS];
 map<int, int> var_map, r_var_map;
 
-typedef struct _ionode {
+typedef struct _trienode{
+    double f_val;
+    int dom_val;
+    struct _trienode* right;
+    struct _trienode* next;
+}trienode;
+
+typedef struct _ionode{
     int var_id;
     vector<int> factors[MAXFACTORS];
 }ionode;
 
+trienode tr_node[no_of_factors];
 ionode node[no_of_variables];
 
 dwisetrie* iterative_outside_in_with_free_variables(int _f, vector< vector<int> > _factor_index_by_variable) {
@@ -93,6 +101,39 @@ public:
     }
 };
 
+void construct_trie(vector< vector<int> >& sorted_factors, vector<int>& variable_order, trienode* root) {
+    int n = variable_order.size();
+    for(int i=0; i <(int)sorted_factors.size(); i++) {
+        trienode* start = root;
+        for(int j = n-1; j>=0; j--) {
+            int cur = sorted_factors[i][variable_order[j]];
+            if(start->down == NULL) {
+                trienode* tmp = new trienode();
+                tmp->dom_val = cur;
+                if(j == 0) {
+                    tmp->f_val = sorted_factors[i][n];
+                }
+                start->down = tmp;
+                start = start->down;
+            }
+            else {
+                start = start->down;
+                while(start->next != NULL) {
+                    start = start->next;
+                }
+                trienode* tmp = new trienode();
+                tmp->dom_val = cur;
+                if(j == 0) {
+                    tmp->f_val = sorted_factors[i][n];
+                }
+                start->right = tmp;
+                start = start->right;
+            }
+        }
+    }
+    return ;
+}
+
 void preprocess(vector<int>& variable_order, vector< vector < vector<int> > >& factor_entry) {
     factors_variable_order.resize(no_of_factors);
     factor_index_by_variable.resize(no_of_variables + 1);
@@ -121,11 +162,12 @@ void preprocess(vector<int>& variable_order, vector< vector < vector<int> > >& f
                 for(int k=0; k<(int)factors[j].size(); k++) {
                     tmp_factor.push_back(make_pair(r_var_map[factors[j][k]], factors[j][k]));
                 }
+                sort(tmp_factor.begin(), tmp_factor.end());
                 for(int k=0; k<(int)tmp_factor.size(); k++) {
                     node[i].factors[st].push_back(tmp_factor[k].second);
                 }
                 sort(factor_entry[j].begin(), factor_entry[j].end(), cmp(variable_order));
-                for(int =0; j<)
+                construct_trie(factor_entry[j], variable_order, &trienode[st]);
                 st++;
             }
         }
